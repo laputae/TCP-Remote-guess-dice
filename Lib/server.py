@@ -5,7 +5,7 @@ serverDice={1:0,2:0,3:0,4:0,5:0,6:0}   #初始化服务器实际发送给客户�
 clientDice={1:0,2:0,3:0,4:0,5:0,6:0}   #初始化玩家竞猜报给服务器的点数对应的数目的键值对
 clientSquence=[]                       #利用循环的数组来实现对玩家的排序
 allplayer=4                            #所有玩家人数
-
+gameRound=0
 def serviceClient(newSocket):
     global allplayer
     global clientSquence
@@ -20,8 +20,11 @@ def serviceClient(newSocket):
             if not block:
                 continue
             if type(json.loads(block))==str:
-                print(json.loads(block))
-
+                if json.loads(block)=='open':
+                    #计算输赢
+                else:
+                    print(json.loads(block))
+                    clientSquence[1]=json.loads(block)      #注册玩家
         for i in range(5):
             dice=[]
             singleDice=random.randint(1,6)
