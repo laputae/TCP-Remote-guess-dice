@@ -10,6 +10,7 @@ def serviceClient(newSocket):
     global allplayer
     global clientSquence
     global serverDice
+    global clientDice
     def sendToclient(dict_info):
         newSocket.send(json.dumps(dict_info).encode("utf-8"))
 
@@ -19,28 +20,27 @@ def serviceClient(newSocket):
             block=get_block(newSocket)
             if not block:
                 continue
-            if type(json.loads(block))==str:
-                if json.loads(block)=='open':
-                    #计算输赢
-                else:
-                    print(json.loads(block))
-                    clientSquence[1]=json.loads(block)      #注册玩家
-        for i in range(5):
-            dice=[]
-            singleDice=random.randint(1,6)
-            serverDice[singleDice]=serverDice[singleDice]+1    # 记录发送给客户端的所有数字分别有多少个
-            dice.append(singleDice)
+            #注册玩家
+            elif len(json.loads(block))==1:
+                print(json.loads(block))
+                clientSquence[1]=(json.loads(block))[0]
+                #发送点数
+                for i in range(5):
+                    dice=[]
+                    singleDice=random.randint(1,6)
+                    serverDice[singleDice]=serverDice[singleDice]+1    # 记录发送给客户端的所有数字分别有多少个
+                    dice.append(singleDice)
+                    put_block(newSocket,dice)
+            #记录玩家上报的点数
+            elif len(json.loads(block))==3:
+                clientDice[(json.loads(block))[2]]=clientDice[(json.loads(block))[2]]+(json.loads(block))[1]
+                #记录顺序
+                #TODO
+            #开奖
+            elif (json.loads(block))[1]=='open':
+                print("开奖")
+                #计算实际点数和玩家上报的点数
 
-        put_block(newSocket,dice)
-        recvdata=newSocket.recv(1024).decode("utf-8")
-        data=json.loads(recvdata)
-        clientSquence[]=''
-        if data[1]!='open':
-            global clientDice
-            print(data)
-            clientDice[data[2]]=clientDice[data[2]]+data[1]     #记录玩家上报的点数的数目
-        else:
-             data[0]       #判断胜负
 
 
 
@@ -48,15 +48,16 @@ def main():
     "服务器基本功能"
     monkey.patch_all()
     # 创建套接字
-    severSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serverSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serverSock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     # 绑定端口
-    severSock.bind(("", 6666))
+    serverSock.bind(("", 6666))
     # 准备监听
-    severSock.listen(4)
+    serverSock.listen(4)
 
     while True:
         # 等待客户端链接
-        clientSocket, client_addr=severSock.accept()
+        clientSocket, client_addr=serverSock.accept()
         # 为客户端服务
         gevent.spawn(serviceClient, clientSocket)
 
