@@ -11,38 +11,36 @@ def serviceClient(newSocket):
     global clientSquence
     global serverDice
     global clientDice
-    def sendToclient(dict_info):
-        newSocket.send(json.dumps(dict_info).encode("utf-8"))
 
     # 接收请求
     while True:
         while True:
             block=get_block(newSocket)
+            block=json.loads(block.decode('utf-8'))
             if not block:
                 continue
             #注册玩家
-            elif len(json.loads(block))==1:
-                print(json.loads(block))
-                clientSquence[1]=(json.loads(block))[0]
+            elif len(block)==1:
+                print(block)
+                clientSquence[1]=block[0]
                 #发送点数
                 for i in range(5):
                     dice=[]
                     singleDice=random.randint(1,6)
                     serverDice[singleDice]=serverDice[singleDice]+1    # 记录发送给客户端的所有数字分别有多少个
                     dice.append(singleDice)
-                    put_block(newSocket,dice)
+                    put_block(newSocket,json.dumps(dice).encode('utf-8'))
             #记录玩家上报的点数
-            elif len(json.loads(block))==3:
-                clientDice[(json.loads(block))[2]]=clientDice[(json.loads(block))[2]]+(json.loads(block))[1]
+            elif len(block)==3:
+                clientDice[block[2]]=clientDice[block[2]]+block[1]
                 #记录顺序
                 #TODO
             #开奖
-            elif (json.loads(block))[1]=='open':
+            elif block[1]=='open':
                 print("开奖")
                 #计算实际点数和玩家上报的点数
-
-
-
+                #TODO
+                break
 
 def main():
     "服务器基本功能"
