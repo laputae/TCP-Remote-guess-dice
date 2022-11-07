@@ -50,8 +50,4 @@ def client(address):
     put_block(sock, b'Simple is better than complex.')
     put_block(sock, b'')
     sock.close()
-"""
-if __name__ == '__main__':
-    server('')
-    #client('')
-"""
+
