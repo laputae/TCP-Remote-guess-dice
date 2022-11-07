@@ -4,8 +4,8 @@ from gevent import monkey
 serverDice={1:0,2:0,3:0,4:0,5:0,6:0}   #初始化服务器实际发送给客户端的所有点数对应的数目的键值对
 clientDice={1:0,2:0,3:0,4:0,5:0,6:0}   #初始化玩家竞猜报给服务器的点数对应的数目的键值对
 clientSquence=[]                       #利用循环的数组来实现对玩家的排序
+saveClientDice={}                      #保存玩家的名字对应的骰子号码
 allplayer=4                            #所有玩家人数
-gameRound=0
 def serviceClient(newSocket):
     global allplayer
     global clientSquence
@@ -14,6 +14,12 @@ def serviceClient(newSocket):
 
     # 接收请求
     while True:
+        #初始化数据
+        gameRound=0
+        serverDice = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}  # 初始化服务器实际发送给客户端的所有点数对应的数目的键值对
+        clientDice = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}  # 初始化玩家竞猜报给服务器的点数对应的数目的键值对
+        clientSquence = []  # 利用循环的数组来实现对玩家的排序
+
         while True:
             block=get_block(newSocket)
             block=json.loads(block.decode('utf-8'))
@@ -32,14 +38,20 @@ def serviceClient(newSocket):
                     put_block(newSocket,json.dumps(dice).encode('utf-8'))
             #记录玩家上报的点数
             elif len(block)==3:
+                gameRound=gameRound+1
                 clientDice[block[2]]=clientDice[block[2]]+block[1]
                 #记录顺序
                 #TODO
+                clientSquence[gameRound%allplayer]=block[0]
             #开奖
             elif block[1]=='open':
                 print("开奖")
                 #计算实际点数和玩家上报的点数
                 #TODO
+                print('上家是：',clientSquence[(gameRound-1)%allplayer])
+                #寻找上家报出的点数
+                M2=10*clientDice[]
+                print()
                 break
 
 def main():
