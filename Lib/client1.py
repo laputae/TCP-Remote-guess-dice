@@ -1,4 +1,4 @@
-import socket,json,time
+import socket,json,time,re
 from TCPpack import recvall,get_block,put_block
 
 clientSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -10,6 +10,7 @@ def main():
     info=[]
     global addr
     while True:
+        print('使用默认的本机IP地址：127.0.0.1')
         addr=('127.0.0.1',6666)        # addr=("127.0.0.1",6666)
         print("连接服务器ing...")
         try:
@@ -25,14 +26,13 @@ def main():
 
         block=get_block(clientSocket)
         block=json.loads(block.decode('utf-8'))
-        if type(block)==list:
-            print('接收到的点数是：')
-            print(block)
+        if (type(block)==list) and (len(block)==5):
+            print('接收到的点数是：',block)
 
             # 查看是否开奖
-        if type(block) == str:
-            print('开奖信息为：')
-            print(block)
+        elif type(block) == str:
+            print('开奖信息为：',block,'下一局开始......')
+            continue
 
         #竞猜点数
         while True:
@@ -44,12 +44,25 @@ def main():
                 info.append(guess)
                 put_block(clientSocket,json.dumps(info).encode('utf-8'))
                 break
-            else:
+            elif re.findall(r'\A\d?\s{1}?\d?\Z|\A\d{2}\s{1}?\d?\Z',str1):
                 guess=guess.split()
-                info.append(int(guess[0]))
-                info.append(int(guess[1]))
-                put_block(clientSocket,json.dumps(info).encode("utf-8"))
-                print('你的点数已提交')
+                if (guess[0]>block[1]) or (guess[1]>block[2]):
+                    if (guess[0]<=30) and (guess[1]<7):
+                        info.append(int(guess[0]))
+                        info.append(int(guess[1]))
+                        put_block(clientSocket,json.dumps(info).encode("utf-8"))
+                        print('你的点数已提交')
+                        block = get_block(clientSocket)
+                        block = json.loads(block.decode('utf-8'))
+                        # 打印上一个人的竞猜结果
+                        if (type(block) == list) and (len(block) == 2):
+                            print('%s' % block[0], '%s' % '竞猜', block[1], ',', block[2])
+                    else:
+                        print('输入不合法，请重新输入')
+                else:
+                    print('输入不合法，请重新输入')
+            else:
+                print('输入不合法，请重新输入')
 
 
 if __name__ == "__main__":
