@@ -23,16 +23,10 @@ def main():
     put_block(clientSocket,json.dumps(info).encode('utf-8'))      #玩家注册
     #打印服务器发来的点数
     while True:
-
         block=get_block(clientSocket)
         block=json.loads(block.decode('utf-8'))
         if (type(block)==list) and (len(block)==5):
             print('接收到的点数是：',block)
-
-            # 查看是否开奖
-        elif type(block) == str:
-            print('开奖信息为：',block,'下一局开始......')
-            continue
 
         #竞猜点数
         while True:
@@ -44,25 +38,27 @@ def main():
                 info.append(guess)
                 put_block(clientSocket,json.dumps(info).encode('utf-8'))
                 break
-            elif re.findall(r'\A\d?\s{1}?\d?\Z|\A\d{2}\s{1}?\d?\Z',str1):
-                guess=guess.split()
-                if (guess[0]>block[1]) or (guess[1]>block[2]):
-                    if (guess[0]<=30) and (guess[1]<7):
-                        info.append(int(guess[0]))
-                        info.append(int(guess[1]))
-                        put_block(clientSocket,json.dumps(info).encode("utf-8"))
-                        print('你的点数已提交')
-                        block = get_block(clientSocket)
-                        block = json.loads(block.decode('utf-8'))
-                        # 打印上一个人的竞猜结果
-                        if (type(block) == list) and (len(block) == 2):
-                            print('%s' % block[0], '%s' % '竞猜', block[1], ',', block[2])
-                    else:
-                        print('输入不合法，请重新输入')
+
+            elif re.findall(r'\A\d?\s{1}?\d?\Z|\A\d{2}\s{1}?\d?\Z', guess):
+                guess = guess.split()
+                if (int(guess[0]) <= 30) and (int(guess[1]) < 7):
+                    info.append(int(guess[0]))
+                    info.append(int(guess[1]))
+                    put_block(clientSocket, json.dumps(info).encode("utf-8"))
+                    print('你的点数已提交')
+
                 else:
                     print('输入不合法，请重新输入')
             else:
                 print('输入不合法，请重新输入')
+
+            # 查看是否开奖
+            block = get_block(clientSocket)
+            block = json.loads(block.decode('utf-8'))
+            if type(block) == str:
+                print('开奖信息为：', block, '下一局开始......')
+                break
+
 
 
 if __name__ == "__main__":
